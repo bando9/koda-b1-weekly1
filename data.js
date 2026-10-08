@@ -1,0 +1,16 @@
+export const daftarMenu = [
+  { id: 1, name: "Mie Ayam Biasa", price: 15000 },
+  { id: 2, name: "Mie Ayam Bakso", price: 20000 },
+  { id: 3, name: "Mie Ayam Ceker", price: 18000 },
+  { id: 4, name: "Mie Ayam Pangsit", price: 18000 },
+  { id: 5, name: "Mie Ayam Komplit", price: 25000 },
+  { id: 6, name: "Mie Yamin Bakso", price: 22000 },
+  { id: 7, name: "Bakso Daging (Biasa)", price: 18000 },
+  { id: 8, name: "Bakso Urat", price: 22000 },
+  { id: 9, name: "Bakso Telur", price: 20000 },
+  { id: 10, name: "Bakso Mercon", price: 25000 },
+  { id: 11, name: "Bakso Beranak", price: 30000 },
+  { id: 12, name: "Soto Mie Bogor", price: 20000 },
+  { id: 13, name: "Es Teh Manis", price: 5000 },
+  { id: 14, name: "Es Jeruk Peras", price: 7000 },
+];
