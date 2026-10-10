@@ -2,29 +2,10 @@ console.log("====================================");
 console.log("SELAMAT DATANG DI BAKSO SATELIT");
 console.log("====================================");
 
-// const { daftarMenu } = require("./data.js");
+const { foods } = require("./data.js");
 const { createInterface } = require("node:readline/promises");
 
-const foods = [
-  { id: 1, name: "Mie Ayam Biasa", price: 15000 },
-  { id: 2, name: "Mie Ayam Bakso", price: 20000 },
-  { id: 3, name: "Mie Ayam Ceker", price: 18000 },
-];
-
-const cart = [
-  {
-    id: 0,
-    name: "Mie Ayam Biasa",
-    price: 15000,
-    quantity: 2,
-    // subTotal: cart.price * cart.quantity,
-  },
-];
-
-function calculateTotal(quantity, price) {
-  return quantity * price;
-}
-// console.log(cart);
+let cart = [];
 
 const rl = createInterface({
   input: process.stdin,
@@ -36,6 +17,7 @@ async function app() {
   while (isRunningApp) {
     const menuPage = ["1. Menu Makanan", "2. Checkout", "3. Exit"];
 
+    console.log("\n---------- MENU UTAMA ----------\n");
     let i = 0;
     while (i < menuPage.length) {
       console.log(menuPage[i]);
@@ -94,19 +76,66 @@ async function orderFood() {
     return;
   }
 
-  const newFood = {
-    ...selectedFood,
-    quantity: Number(quantityFood),
-  };
+  const productId = cart.find((product) => product.id == selectedFood.id);
 
-  const newCart = [...cart, newFood];
+  if (typeof productId == "undefined") {
+    // * ======= CREATE =======
+    const newOrderFood = {
+      ...selectedFood,
+      quantity: Number(quantityFood),
+    };
 
-  console.log(newCart);
-  console.log("\n---------- Menu Halaman ----------\n\n");
+    const newCart = [...cart, newOrderFood];
+    cart = newCart;
+
+    // console.log("\n---------- DAFTAR MENU----------");
+  } else {
+    // * ======= UPDATE =======
+    const updateCart = cart.map((product) => {
+      if (product.id == selectedFood.id) {
+        const totalQuantity = Number(quantityFood) + product.quantity;
+        const updateProduct = {
+          ...product,
+          quantity: totalQuantity,
+        };
+        return updateProduct;
+      }
+      return product;
+    });
+    cart = updateCart;
+  }
+  // console.log("\n---------- DAFTAR MENU----------");
 }
 
-// orderFood();
-
 async function checkOut() {
-  console.log("checkout");
+  let totalPrice = 0;
+  let textCheckout = "=== STRUK PESANAN ===\n\n";
+
+  cart.map((product) => {
+    const quantity = product.quantity;
+    const name = product.name;
+    const price = product.price;
+
+    const subTotal = calculateTotal(quantity, price);
+
+    textCheckout += `${name}\n`;
+    textCheckout += `${quantity} porsi x Rp${price} = Rp${subTotal}\n\n`;
+
+    totalPrice += subTotal;
+  });
+
+  const receipt = {
+    data: cart,
+    totalPrice,
+  };
+
+  textCheckout += `TOTAL BAYAR = Rp${receipt.totalPrice}\n`;
+  textCheckout += "=====================\n";
+  textCheckout += "Terima kasih atas pesanan Anda!";
+
+  console.log(textCheckout);
+}
+
+function calculateTotal(quantity, price) {
+  return quantity * price;
 }
