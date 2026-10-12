@@ -71,7 +71,7 @@ async function app() {
         isRunningApp = false;
         break;
       default:
-        console.log("Silahkan pilih menu 1,2,3.");
+        console.log("Silahkan pilih menu (1-4)");
         break;
     }
   }
@@ -93,7 +93,7 @@ async function orderFood() {
     "\nMasukkan ID / Nomor Makanan yang ingin dipesan: ",
   );
 
-  const selectedFood = foods.find((food) => food.id == Number(foodId));
+  const selectedFood = foods.find((food) => food.id === Number(foodId));
 
   if (!selectedFood) {
     console.log("Menu makanan tidak ditemukan");
@@ -104,31 +104,36 @@ async function orderFood() {
     `Berapa porsi ${selectedFood.name} yang ingin dipesan: `,
   );
 
-  // TODO: handle error kalo ngasih selain angka, "angka"
-  Number(quantityFood);
+  let numbQuantityFood = Number(quantityFood);
 
-  // TODO: kalo equal to, bakal strict. gmna handle strict ini.
-  if (typeof quantityFood !== "number") {
+  if (
+    Number.isNaN(numbQuantityFood) ||
+    numbQuantityFood <= 0 ||
+    !Number.isInteger(numbQuantityFood)
+  ) {
     console.log("Jumlah pesanan tidak valid.");
     return;
   }
 
-  const productId = cart.find((product) => product.id == selectedFood.id);
+  const productId = cart.find((product) => product.id === selectedFood.id);
 
   if (typeof productId == "undefined") {
     // * ======= CREATE =======
     const newOrderFood = {
       ...selectedFood,
-      quantity: Number(quantityFood),
+      quantity: numbQuantityFood,
     };
 
     const newCart = [...cart, newOrderFood];
     cart = newCart;
+    console.log(
+      `\nBerhasil menambahkan ${numbQuantityFood} porsi ${selectedFood.name} ke pesanan Anda.`,
+    );
   } else {
     // * ======= UPDATE =======
     const updateCart = cart.map((product) => {
       if (product.id == selectedFood.id) {
-        const totalQuantity = Number(quantityFood) + product.quantity;
+        const totalQuantity = numbQuantityFood + product.quantity;
         const updateProduct = {
           ...product,
           quantity: totalQuantity,
@@ -138,6 +143,9 @@ async function orderFood() {
       return product;
     });
     cart = updateCart;
+    console.log(
+      `\nBerhasil menambahkan ${numbQuantityFood} porsi ${selectedFood.name} ke pesanan Anda.`,
+    );
   }
 }
 
