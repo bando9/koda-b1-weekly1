@@ -60,6 +60,10 @@ async function app() {
         await orderFood();
         break;
       case "2":
+        console.log("\nMemproses struk pesanan...");
+        await delayProcess(2000, () =>
+          console.log("Menghitung total belanja..."),
+        );
         await checkOut();
         break;
       case "3":
@@ -80,12 +84,21 @@ async function app() {
 app();
 
 // * Functions
+function delayProcess(ms, callback) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      callback();
+      resolve();
+    }, ms);
+  });
+}
+
 async function orderFood() {
   console.log("\n---------- DAFTAR MENU----------");
 
   let textMenu = "Daftar Menu:\n\n";
   foods.forEach((menu) => {
-    textMenu += `${menu.id}. ${menu.name} - Rp${formatRupiah(menu.price)}\n`;
+    textMenu += `${menu.id}. ${menu.name} - ${formatRupiah(menu.price)}\n`;
   });
   console.log(textMenu);
 
@@ -161,14 +174,12 @@ async function checkOut() {
   }
 
   cart.map((product) => {
-    const quantity = product.quantity;
-    const name = product.name;
-    const price = product.price;
+    const { quantity, name, price } = product;
 
     const subTotal = calculateTotal(quantity, price);
 
     textCheckout += `${name}\n`;
-    textCheckout += `${quantity} porsi x ${formatRupiah(price)} = Rp${formatRupiah(subTotal)}\n\n`;
+    textCheckout += `${quantity} porsi x ${formatRupiah(price)} = ${formatRupiah(subTotal)}\n\n`;
 
     totalPrice += subTotal;
   });
