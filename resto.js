@@ -2,8 +2,29 @@ console.log("====================================");
 console.log("SELAMAT DATANG DI BAKSO SATELIT");
 console.log("====================================");
 
-const { foods } = require("./data.js");
 const { createInterface } = require("node:readline/promises");
+
+const foods = [
+  { id: 1, name: "Bakso Urat", price: 13000 },
+  { id: 2, name: "Bakso Tetelan", price: 16000 },
+  { id: 3, name: "Bakso Iga", price: 18000 },
+  { id: 4, name: "Bakso Rudal", price: 20000 },
+  { id: 5, name: "Bakso Telor", price: 20000 },
+  { id: 6, name: "Bakso Satelit", price: 22000 },
+  { id: 7, name: "Bakso Rusuk", price: 28000 },
+  { id: 8, name: "Bakso Nuklir 500gr", price: 45000 },
+  { id: 9, name: "Mie Ayam", price: 12000 },
+  { id: 10, name: "Mie Ayam Bakso", price: 15000 },
+  { id: 11, name: "Mie Ayam Balungan", price: 15000 },
+  { id: 12, name: "Mie Ayam Telor", price: 15000 },
+  { id: 13, name: "Mie Ayam Ceker 250gr", price: 16000 },
+  { id: 14, name: "Mie Ayam Kepala 250gr", price: 16000 },
+  { id: 15, name: "Mie Ayam Bakso Urat", price: 18000 },
+  { id: 16, name: "Mie Ayam Rudal", price: 20000 },
+  { id: 17, name: "Mie Ayam Bakso Telur", price: 20000 },
+  { id: 18, name: "Mie Ayam Brutal", price: 20000 },
+  { id: 19, name: "Mie Ayam Tumpah", price: 22000 },
+];
 
 let cart = [];
 
@@ -14,8 +35,14 @@ const rl = createInterface({
 
 async function app() {
   let isRunningApp = true;
+
   while (isRunningApp) {
-    const menuPage = ["1. Menu Makanan", "2. Checkout", "3. Exit"];
+    const menuPage = [
+      "1. Menu Makanan",
+      "2. Checkout",
+      "3. Lihat daftar pelanggan lain",
+      "4. Exit",
+    ];
 
     console.log("\n---------- MENU UTAMA ----------\n");
     let i = 0;
@@ -25,7 +52,7 @@ async function app() {
     }
 
     const choiceMenuPage = await rl.question(
-      "\nSilahkan pilih halaman (1-3): ",
+      "\nSilahkan pilih halaman (1-4): ",
     );
 
     switch (choiceMenuPage.trim()) {
@@ -36,12 +63,14 @@ async function app() {
         await checkOut();
         break;
       case "3":
+        await showCustomers();
+        break;
+      case "4":
         console.log("exit");
         rl.close();
         isRunningApp = false;
         break;
       default:
-        // kembali ke case 1
         console.log("Silahkan pilih menu 1,2,3.");
         break;
     }
@@ -50,29 +79,37 @@ async function app() {
 
 app();
 
+// * Functions
 async function orderFood() {
   console.log("\n---------- DAFTAR MENU----------");
-  console.table(foods);
 
-  const foodId = await rl.question("\nSilahkan pilih menu makanan: ");
+  let textMenu = "Daftar Menu:\n\n";
+  foods.forEach((menu) => {
+    textMenu += `${menu.id}. ${menu.name} - Rp${formatRupiah(menu.price)}\n`;
+  });
+  console.log(textMenu);
+
+  const foodId = await rl.question(
+    "\nMasukkan ID / Nomor Makanan yang ingin dipesan: ",
+  );
 
   const selectedFood = foods.find((food) => food.id == Number(foodId));
 
   if (!selectedFood) {
     console.log("Menu makanan tidak ditemukan");
-    // TODO: kembali ke menu makanan!
-    rl.close();
     return;
   }
 
   let quantityFood = await rl.question(
-    `\nMau pesan ${selectedFood.name} berapa: `,
+    `Berapa porsi ${selectedFood.name} yang ingin dipesan: `,
   );
+
+  // TODO: handle error kalo ngasih selain angka, "angka"
   Number(quantityFood);
 
-  if (typeof quantityFood == "number") {
-    console.log("masukan angka id pada menu makanan !!");
-    rl.close();
+  // TODO: kalo equal to, bakal strict. gmna handle strict ini.
+  if (typeof quantityFood !== "number") {
+    console.log("Jumlah pesanan tidak valid.");
     return;
   }
 
@@ -87,8 +124,6 @@ async function orderFood() {
 
     const newCart = [...cart, newOrderFood];
     cart = newCart;
-
-    // console.log("\n---------- DAFTAR MENU----------");
   } else {
     // * ======= UPDATE =======
     const updateCart = cart.map((product) => {
@@ -104,12 +139,18 @@ async function orderFood() {
     });
     cart = updateCart;
   }
-  // console.log("\n---------- DAFTAR MENU----------");
 }
 
 async function checkOut() {
   let totalPrice = 0;
-  let textCheckout = "=== STRUK PESANAN ===\n\n";
+  let textCheckout = "\n\n=== STRUK PESANAN ===\n\n";
+
+  if (cart.length == 0) {
+    console.log(
+      "\nKeranjang Anda masih kosong. Silakan pesan makanan terlebih dahulu.",
+    );
+    return;
+  }
 
   cart.map((product) => {
     const quantity = product.quantity;
@@ -119,7 +160,7 @@ async function checkOut() {
     const subTotal = calculateTotal(quantity, price);
 
     textCheckout += `${name}\n`;
-    textCheckout += `${quantity} porsi x Rp${price} = Rp${subTotal}\n\n`;
+    textCheckout += `${quantity} porsi x ${formatRupiah(price)} = Rp${formatRupiah(subTotal)}\n\n`;
 
     totalPrice += subTotal;
   });
@@ -129,13 +170,43 @@ async function checkOut() {
     totalPrice,
   };
 
-  textCheckout += `TOTAL BAYAR = Rp${receipt.totalPrice}\n`;
+  textCheckout += `TOTAL BAYAR = ${formatRupiah(receipt.totalPrice)}\n`;
   textCheckout += "=====================\n";
   textCheckout += "Terima kasih atas pesanan Anda!";
 
   console.log(textCheckout);
 }
 
+function formatRupiah(angka) {
+  return `Rp ${angka.toLocaleString("id-ID")}`;
+}
+
 function calculateTotal(quantity, price) {
   return quantity * price;
+}
+
+async function showCustomers() {
+  const url = "https://jsonplaceholder.typicode.com/users";
+
+  return fetch(url)
+    .then((response) => {
+      console.log("\nMengambil data pelanggan dari server...");
+      const data = response.json();
+      return data;
+    })
+    .then((data) => {
+      data.forEach((customer, index) => {
+        console.log(`
+${index + 1}. Nama     : ${customer.name}
+   Username : ${customer.username}
+   Email    : ${customer.email}
+   Perusahaan: ${customer.company.name}
+   Kota     : ${customer.address.city}
+----------------------------------------`);
+      });
+    })
+    .catch((err) => {
+      console.log("Gagal mengambil data pelanggan: " + err);
+      return err;
+    });
 }
